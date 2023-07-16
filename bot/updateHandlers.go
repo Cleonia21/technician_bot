@@ -16,10 +16,10 @@ func (b *Bot) message(msg *telego.Message) {
 	} else {
 		return
 	}
-	b.sendMenu(telegoutil.ID(msg.Chat.ID), keyboard, text)
+	b.sendMenu(telegoutil.ID(msg.Chat.ID), "", keyboard, text)
 }
 
-func (b *Bot) sendMenu(chatID telego.ChatID, keyboard *telego.InlineKeyboardMarkup, text string) {
+func (b *Bot) sendMenu(chatID telego.ChatID, answerForQueryID string, keyboard *telego.InlineKeyboardMarkup, text string) {
 	message := telegoutil.Message(
 		chatID,
 		text,
@@ -28,6 +28,13 @@ func (b *Bot) sendMenu(chatID telego.ChatID, keyboard *telego.InlineKeyboardMark
 	if err != nil {
 		b.telegram.Logger().Errorf(err.Error())
 	}
+	if answerForQueryID != "" {
+		err = b.telegram.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{CallbackQueryID: answerForQueryID})
+		if err != nil {
+			b.telegram.Logger().Errorf(err.Error())
+		}
+	}
+
 }
 
 func (b *Bot) callbackQuery(query *telego.CallbackQuery) {
@@ -43,7 +50,8 @@ func (b *Bot) callbackQuery(query *telego.CallbackQuery) {
 		b.telegram.Logger().Errorf(err.Error())
 		return
 	}
-	b.editMenu(query, keyboard, text)
+	b.sendMenu(telegoutil.ID(query.Message.Chat.ID), query.ID, keyboard, text)
+	//b.editMenu(query, keyboard, text)
 }
 
 func (b *Bot) startMsgParams() (keyboard *telego.InlineKeyboardMarkup, text string) {
