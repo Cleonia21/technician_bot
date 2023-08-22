@@ -42,8 +42,8 @@ func (b *Bot) queryDataToMenu(data string) (keyboard *telego.InlineKeyboardMarku
 	return
 }
 
-func (b *Bot) keyToKeyboard(table string, parentKey string) (keyboard *telego.InlineKeyboardMarkup) {
-	child, err := b.db.GetChild(table, parentKey)
+func (b *Bot) keyToKeyboard(table string, key string) (keyboard *telego.InlineKeyboardMarkup) {
+	child, err := b.db.GetChild(table, key)
 	if err != nil {
 		return nil
 	}
@@ -54,5 +54,30 @@ func (b *Bot) keyToKeyboard(table string, parentKey string) (keyboard *telego.In
 			telegoutil.InlineKeyboardButton(value).
 				WithCallbackData(fmt.Sprintf("%v@%v", table, key)))
 	}
-	return b.btnsOptimalPlacement(btns)
+
+	var params string
+	target, err := b.db.GetTarget(table, key)
+	if err == nil {
+		value, err := b.db.GetValue(table, target)
+		if err == nil {
+			params = value
+		}
+	}
+
+	markup, err := editingBtns(btns, params)
+	if err != nil {
+		return nil
+	}
+
+	if key == "start" {
+		markup = addControlBtns(markup, "")
+	} else {
+		parent, err := b.db.GetParent(table, key)
+		if err != nil {
+			b.logger.Error(err)
+		} else {
+			markup = addControlBtns(markup, parent)
+		}
+	}
+	return markup
 }

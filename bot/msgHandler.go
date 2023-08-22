@@ -25,7 +25,7 @@ func (b *Bot) startMsgParams() (keyboard *telego.InlineKeyboardMarkup, text stri
 		btns = append(btns, telegoutil.InlineKeyboardButton(key).
 			WithCallbackData(value))
 	}
-	keyboard = b.btnsOptimalPlacement(btns)
+	keyboard = btnsOptimalPlacement(btns)
 	text = "Привет! Выбери машину"
 	return keyboard, text
 }

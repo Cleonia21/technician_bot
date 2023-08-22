@@ -120,6 +120,13 @@ func (d *Data) GetChild(table string, key string) (child map[string]string, err 
 	return
 }
 
+func (d *Data) GetParent(table string, key string) (parent string, err error) {
+	row := d.db.QueryRow(fmt.Sprintf("select parent from %v where key = '%v'", table, key))
+
+	err = row.Scan(&parent)
+	return
+}
+
 func (d *Data) GetTarget(table string, sourceKey string) (targetKey string, err error) {
 	row := d.db.QueryRow(fmt.Sprintf("select target from %v where source = '%v'", table, sourceKey))
 
