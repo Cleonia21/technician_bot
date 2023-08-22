@@ -4,18 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mymmrac/telego"
+	"github.com/withmandala/go-log"
 	"main/conf"
 	"main/db"
+	"main/utils"
 	"os"
 )
 
 type Bot struct {
-	telegram  *telego.Bot
-	db        db.Data
-	hashCache map[string]string
+	telegram *telego.Bot
+	db       *db.Data
+	logger   *log.Logger
 }
 
-func Init() *Bot {
+func Init(dataBase *db.Data) *Bot {
 	b := &Bot{} //
 	botToken := conf.TOKEN
 
@@ -28,8 +30,9 @@ func Init() *Bot {
 		os.Exit(1)
 	}
 
-	b.db = db.Init(b.telegram.Logger())
-	b.hashCache = make(map[string]string)
+	b.logger, _ = utils.NewLogger("")
+
+	b.db = dataBase
 
 	return b
 }
@@ -47,11 +50,11 @@ func (b *Bot) Start() {
 
 	// Loop through all tgGetChan when they came
 	for update := range tgGetChan {
-		if update.Message != nil {
-			b.message(update.Message)
-		}
 		if update.CallbackQuery != nil {
-			b.callbackQuery(update.CallbackQuery)
+			b.callbackQueryHandler(update.CallbackQuery)
+		}
+		if update.Message != nil && update.Message.Chat.Type == "private" {
+			b.msgHandler(update.Message)
 		}
 	}
 }

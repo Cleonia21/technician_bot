@@ -1,9 +1,17 @@
 package main
 
-import "main/bot"
+import (
+	"main/bot"
+	"main/db"
+	"main/xmlToDB"
+)
 
 func main() {
-	b := bot.Init()
+	dataBase := db.Init()
+
+	xmlToDB.XMLToDB("kia", dataBase)
+
+	b := bot.Init(dataBase)
 	b.Start()
 	defer b.Stop()
 }
