@@ -133,3 +133,10 @@ func (d *Data) GetTarget(table string, sourceKey string) (targetKey string, err 
 	err = row.Scan(&targetKey)
 	return
 }
+
+func (d *Data) GetSource(table string, targetKey string) (sourceKey string, err error) {
+	row := d.db.QueryRow(fmt.Sprintf("select source from %v where target = '%v'", table, targetKey))
+
+	err = row.Scan(&sourceKey)
+	return
+}

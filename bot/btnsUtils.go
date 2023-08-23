@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/mymmrac/telego"
-	"github.com/mymmrac/telego/telegoutil"
 	"sort"
 )
 
-func editingBtns(rawBtns []telego.InlineKeyboardButton, jsonParams string) (*telego.InlineKeyboardMarkup, error) {
+func placementBtns(rawBtns []telego.InlineKeyboardButton, jsonParams string) (*telego.InlineKeyboardMarkup, error) {
 	var err error
 	if jsonParams != "" {
 		rawBtns, err = sortBtns(rawBtns, jsonParams)
@@ -89,15 +88,4 @@ func btnsOptimalPlacement(btns []telego.InlineKeyboardButton) *telego.InlineKeyb
 	}
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 	return keyboard
-}
-
-func addControlBtns(markup *telego.InlineKeyboardMarkup, parentKey string) *telego.InlineKeyboardMarkup {
-	startBtn := telegoutil.InlineKeyboardButton("в начало").WithCallbackData("start")
-	if parentKey == "" {
-		markup.InlineKeyboard = append(markup.InlineKeyboard, telegoutil.InlineKeyboardRow(startBtn))
-	} else {
-		backBtn := telegoutil.InlineKeyboardButton("назад").WithCallbackData(parentKey)
-		markup.InlineKeyboard = append(markup.InlineKeyboard, telegoutil.InlineKeyboardRow(startBtn, backBtn))
-	}
-	return markup
 }
