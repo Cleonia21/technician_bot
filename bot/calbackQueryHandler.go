@@ -77,11 +77,11 @@ func (b *Bot) addControlBtns(keyboard *telego.InlineKeyboardMarkup, table string
 }
 
 func addControlBtns(markup *telego.InlineKeyboardMarkup, key string) *telego.InlineKeyboardMarkup {
-	startBtn := telegoutil.InlineKeyboardButton("В начало").WithCallbackData("start")
+	startBtn := telegoutil.InlineKeyboardButton("в начало").WithCallbackData("start")
 	if key == "" {
 		markup.InlineKeyboard = append(markup.InlineKeyboard, telegoutil.InlineKeyboardRow(startBtn))
 	} else {
-		backBtn := telegoutil.InlineKeyboardButton("Назад").WithCallbackData(key)
+		backBtn := telegoutil.InlineKeyboardButton("назад").WithCallbackData(key)
 		markup.InlineKeyboard = append(markup.InlineKeyboard, telegoutil.InlineKeyboardRow(startBtn, backBtn))
 	}
 	return markup
@@ -111,6 +111,9 @@ func (b *Bot) getBtns(table string, key string) ([]telego.InlineKeyboardButton, 
 
 	var btns []telego.InlineKeyboardButton
 	for key, value := range child {
+		if len(key) == 0 || len(value) == 0 {
+			continue
+		}
 		btns = append(btns,
 			telegoutil.InlineKeyboardButton(value).
 				WithCallbackData(fmt.Sprintf("%v@%v", table, key)))

@@ -15,5 +15,3 @@ func main() {
 	b.Start()
 	defer b.Stop()
 }
-
-// кнопки назад и главное меню

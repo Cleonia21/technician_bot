@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/mymmrac/telego"
+	"log"
 	"sort"
 )
 
@@ -53,7 +54,11 @@ func sortBtns(rawBtns []telego.InlineKeyboardButton, jsonParams string) ([]teleg
 
 	spacedBtns := make([]telego.InlineKeyboardButton, len(mapOrder))
 	for _, btn := range rawBtns {
-		i := mapOrder[btn.Text]
+		i, ok := mapOrder[btn.Text]
+		if !ok {
+			log.Println("discrepancy between the parameters and the list of buttons") //допились возврат ошибки
+			return rawBtns, nil
+		}
 		spacedBtns[i] = btn
 	}
 	return spacedBtns, nil
