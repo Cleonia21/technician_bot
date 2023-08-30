@@ -15,7 +15,6 @@ services:
     volumes:
       - postgres-db:/var/lib/postgresql/data
   web:
-    image: cleonia/tech_bot_01
     build: .
     env_file:
       - .env
