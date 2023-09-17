@@ -14,19 +14,12 @@ type Data struct {
 	logger telego.Logger
 }
 
-type Content struct {
-	Path  string
-	Text  string
-	Photo []byte
-	Child []string
-}
-
 func Init() (d *Data) {
 	d = new(Data)
 	d.logger, _ = utils.NewLogger("")
-	//connStr := "user=cleonia password=2222 dbname=postgres port=5432 sslmode=disable"
+	connStr := "user=postgres password=2222 dbname=postgres port=5432 sslmode=disable"
 	var err error
-	d.db, err = sql.Open("postgres", "postgres://postgres:2222@postgres:5432/postgres?sslmode=disable")
+	d.db, err = sql.Open("postgres", connStr) //"postgres", "postgres://postgres:2222@postgres:5432/postgres?sslmode=disable")
 
 	log.Println(err)
 	if err != nil {
@@ -35,18 +28,15 @@ func Init() (d *Data) {
 	return
 }
 
-func (d *Data) Exec(tableName string, lines []Line) {
-	log.Println(d.dropTable(tableName))
-	log.Println(d.createTable(tableName))
-	log.Println(d.InsertLines(tableName, lines))
-}
-
-func (d *Data) dropTable(tableName string) error {
+func (d *Data) DropTable(tableName string) error {
 	_, err := d.db.Exec(fmt.Sprintf("DROP TABLE %v", tableName))
+	if err != nil {
+		log.Println(err)
+	}
 	return err
 }
 
-func (d *Data) createTable(name string) error {
+func (d *Data) CreateTable(name string) error {
 	query := fmt.Sprintf(`create table %v
 	(
 		id     serial primary key,
@@ -57,14 +47,15 @@ func (d *Data) createTable(name string) error {
 		target text
 	);`, name)
 	_, err := d.db.Exec(query)
+	if err != nil {
+		log.Println(err)
+	}
 	return err
 }
 
 func (d *Data) Close() {
 	_ = d.db.Close()
 }
-
-//insert into table values (1,1), (1,2), (1,3), (2,1);
 
 type Line struct {
 	Id     string `xml:"id,attr"`
@@ -87,6 +78,9 @@ func (d *Data) InsertLines(table string, lines []Line) error {
 	}
 	query = query[:len(query)-1] + ";"
 	_, err := d.db.Exec(query)
+	if err != nil {
+		log.Println(err)
+	}
 	return err
 }
 

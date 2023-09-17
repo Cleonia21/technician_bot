@@ -48,13 +48,19 @@ func (b *Bot) Start() {
 	// Stop reviving tgGetChan from update channel
 	defer b.telegram.StopLongPolling()
 
-	// Loop through all tgGetChan when they came
-	for update := range tgGetChan {
-		if update.CallbackQuery != nil {
-			b.callbackQueryHandler(update.CallbackQuery)
-		}
-		if update.Message != nil && update.Message.Chat.Type == "private" {
-			b.msgHandler(update.Message)
-		}
+	for range [10]int{} {
+		go func() {
+			// Loop through all tgGetChan when they came
+			for update := range tgGetChan {
+				if update.CallbackQuery != nil {
+					b.callbackQueryHandler(update.CallbackQuery)
+				}
+				if update.Message != nil && update.Message.Chat.Type == "private" {
+					b.msgHandler(update.Message)
+				}
+			}
+		}()
 	}
+	plug := make(chan int)
+	<-plug
 }

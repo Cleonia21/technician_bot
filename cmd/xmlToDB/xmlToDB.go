@@ -37,7 +37,6 @@ func XMLToDB(fileName string, dataBase *db.Data) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("file success read")
 
 	mxCell := mxFile.Diagram.MxGraphModel.Root.MxCell
 
@@ -45,10 +44,7 @@ func XMLToDB(fileName string, dataBase *db.Data) {
 		mxCell[i].Value = utils.HtmlToString(mxCell[i].Value)
 	}
 
-	//database.DB.Db.AutoMigrate(&Line{})
-	//
-	//database.DB.Db.Create(mxCell[0])
-	//
-	//time.Sleep(10 * time.Minute)
-	dataBase.Exec(fileName, mxCell)
+	_ = dataBase.DropTable(fileName)
+	_ = dataBase.CreateTable(fileName)
+	_ = dataBase.InsertLines(fileName, mxCell)
 }
