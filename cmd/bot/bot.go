@@ -7,17 +7,15 @@ import (
 	"github.com/withmandala/go-log"
 	"os"
 	"technician_bot/cmd/conf"
-	"technician_bot/cmd/db"
 	"technician_bot/cmd/utils"
 )
 
 type Bot struct {
 	telegram *telego.Bot
-	db       *db.Data
 	logger   *log.Logger
 }
 
-func Init(dataBase *db.Data) *Bot {
+func Init() *Bot {
 	b := &Bot{} //
 	botToken := conf.TOKEN
 
@@ -32,13 +30,11 @@ func Init(dataBase *db.Data) *Bot {
 
 	b.logger, _ = utils.NewLogger("")
 
-	b.db = dataBase
-
 	return b
 }
 
 func (b *Bot) Stop() {
-	b.db.Close()
+
 }
 
 func (b *Bot) Start() {

@@ -3,9 +3,9 @@ package xmlToDB
 import (
 	"encoding/xml"
 	"log"
-	"technician_bot/cmd/db"
+	"technician_bot/database"
 
-	//"main/db"
+	//"main/database"
 	"os"
 	"technician_bot/cmd/utils"
 )
@@ -23,10 +23,10 @@ type MxGraphModel struct {
 }
 
 type Root struct {
-	MxCell []db.Line `xml:"mxCell"`
+	MxCell []database.Line `xml:"mxCell"`
 }
 
-func XMLToDB(fileName string, dataBase *db.Data) {
+func XMLToDB(fileName string) {
 	mxFile := new(Mxfile)
 
 	data, err := os.ReadFile("cmd/xmlToDB/xml/" + fileName + ".xml")
@@ -44,7 +44,7 @@ func XMLToDB(fileName string, dataBase *db.Data) {
 		mxCell[i].Value = utils.HtmlToString(mxCell[i].Value)
 	}
 
-	_ = dataBase.DropTable(fileName)
-	_ = dataBase.CreateTable(fileName)
-	_ = dataBase.InsertLines(fileName, mxCell)
+	_ = database.DropTable(fileName)
+	_ = database.CreateTable(fileName)
+	_ = database.InsertLines(fileName, mxCell)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/mymmrac/telego"
 	"github.com/mymmrac/telego/telegoutil"
 	"strings"
+	"technician_bot/database"
 )
 
 func (b *Bot) callbackQueryHandler(query *telego.CallbackQuery) {
@@ -19,9 +20,6 @@ func (b *Bot) callbackQueryHandler(query *telego.CallbackQuery) {
 }
 
 func (b *Bot) queryDataToMenu(data string) (keyboard *telego.InlineKeyboardMarkup, text string, err error) {
-	if b.db == nil {
-		return nil, "sdfsd", nil
-	}
 	if data == "start" {
 		keyboard, text = b.startMsgParams()
 		return
@@ -32,7 +30,7 @@ func (b *Bot) queryDataToMenu(data string) (keyboard *telego.InlineKeyboardMarku
 		return
 	}
 
-	text, err = b.db.GetValue(table, targetKey)
+	text, err = database.GetValue(table, targetKey)
 	if err != nil {
 		return
 	}
@@ -52,7 +50,7 @@ func (b *Bot) parseData(data string) (table, targetKey, sourceKey string, err er
 
 	table = splitData[0]
 	sourceKey = splitData[1]
-	targetKey, err = b.db.GetTarget(table, sourceKey)
+	targetKey, err = database.GetTarget(table, sourceKey)
 	if err != nil {
 		err = fmt.Errorf("not found target %v", err)
 		return
@@ -64,12 +62,12 @@ func (b *Bot) addControlBtns(keyboard *telego.InlineKeyboardMarkup, table string
 	if sourceKey == "start" {
 		keyboard = addControlBtns(keyboard, "")
 	} else {
-		parent, err := b.db.GetParent(table, sourceKey)
+		parent, err := database.GetParent(table, sourceKey)
 		if err != nil {
 			keyboard = addControlBtns(keyboard, "start")
 			return keyboard
 		}
-		source, err := b.db.GetSource(table, parent)
+		source, err := database.GetSource(table, parent)
 		if err != nil {
 			keyboard = addControlBtns(keyboard, "start")
 			return keyboard
@@ -107,7 +105,7 @@ func (b *Bot) getKeyboard(table string, key string) (keyboard *telego.InlineKeyb
 }
 
 func (b *Bot) getBtns(table string, key string) ([]telego.InlineKeyboardButton, error) {
-	child, err := b.db.GetChild(table, key)
+	child, err := database.GetChild(table, key)
 	if err != nil || len(child) == 0 {
 		return nil, errors.New("buttons not found")
 	}
@@ -126,9 +124,9 @@ func (b *Bot) getBtns(table string, key string) ([]telego.InlineKeyboardButton, 
 
 func (b *Bot) getParams(table string, key string) string {
 	var params string
-	target, err := b.db.GetTarget(table, key)
+	target, err := database.GetTarget(table, key)
 	if err == nil {
-		value, err := b.db.GetValue(table, target)
+		value, err := database.GetValue(table, target)
 		if err == nil {
 			params = value
 		}

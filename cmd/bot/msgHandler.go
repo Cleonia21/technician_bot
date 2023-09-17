@@ -3,6 +3,7 @@ package bot
 import (
 	"github.com/mymmrac/telego"
 	"github.com/mymmrac/telego/telegoutil"
+	"technician_bot/database"
 )
 
 func (b *Bot) msgHandler(msg *telego.Message) {
@@ -33,13 +34,13 @@ func (b *Bot) startMsgParams() (keyboard *telego.InlineKeyboardMarkup, text stri
 func (b *Bot) tableFirsKeys() map[string]string {
 	tables := make(map[string]string)
 
-	keyKia, err := b.db.GetKey("kia", "start")
+	keyKia, err := database.GetKey("kia", "start")
 	if err != nil {
 		b.logger.Error("table or first row kia not found")
 	}
 	tables["kia"] = "kia@" + keyKia
 
-	keyPolo, err := b.db.GetKey("polo", "start")
+	keyPolo, err := database.GetKey("polo", "start")
 	if err != nil {
 		b.logger.Error("table or first row polo not found")
 	}

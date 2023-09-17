@@ -2,18 +2,19 @@ package main
 
 import (
 	"technician_bot/cmd/bot"
-	"technician_bot/cmd/db"
 	"technician_bot/cmd/xmlToDB"
-	//"technician_bot/database"
+	"technician_bot/database"
 )
 
 func main() {
-	dataBase := db.Init()
+	database.ConnectDB()
+	//dataBase := database.Init()
 	//database.ConnectDb()
-	xmlToDB.XMLToDB("kia", dataBase)
-	xmlToDB.XMLToDB("polo", dataBase)
+	xmlToDB.XMLToDB("kia")
+	xmlToDB.XMLToDB("polo")
 
-	b := bot.Init(dataBase)
+	b := bot.Init()
 	b.Start()
 	defer b.Stop()
+	database.Close()
 }
