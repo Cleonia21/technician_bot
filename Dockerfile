@@ -1,6 +1,20 @@
-FROM golang:1.21.0
+# Используйте образ Go для вашего приложения
+FROM golang:latest
 
-WORKDIR /usr/src/app
+# Установка рабочей директории внутри образа
+WORKDIR /app
 
+# Копирование файлов go.mod и go.sum в контейнер
+COPY go.mod go.sum ./
+
+# Запуск команды go mod download для загрузки зависимостей
+RUN go mod download
+
+# Копирование всех файлов в контейнер
 COPY . .
-RUN go mod tidy
+
+# Порт, на котором ваше приложение слушает
+EXPOSE 8080
+
+# Запуск вашего приложения
+CMD ["go", "run", "cmd/main.go"]

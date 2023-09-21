@@ -5,7 +5,6 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/mymmrac/telego"
-	"log"
 	"os"
 	"technician_bot/cmd/utils"
 )
@@ -20,9 +19,10 @@ var DB DBinstance
 func ConnectDB() {
 	DB.logger, _ = utils.NewLogger("")
 
-	connStr := "user=postgres password=2222 dbname=postgres port=5432 sslmode=disable"
+	//connStr := "user=postgres password=2222 dbname=postgres port=5432 sslmode=disable"
+	connStr := "postgres://username:testpass@postgres:5432/mydb?sslmode=disable"
 	var err error
-	DB.DB, err = sql.Open("postgres", connStr) //"postgres", "postgres://postgres:2222@postgres:5432/postgres?sslmode=disable")
+	DB.DB, err = sql.Open("postgres", connStr) //)
 
 	if err != nil {
 		DB.logger.Errorf("Failed to connect to database. \n", err)
@@ -34,7 +34,7 @@ func ConnectDB() {
 func DropTable(tableName string) error {
 	_, err := DB.DB.Exec(fmt.Sprintf("DROP TABLE %v", tableName))
 	if err != nil {
-		log.Println(err)
+		DB.logger.Errorf(err.Error())
 	}
 	return err
 }
@@ -51,7 +51,7 @@ func CreateTable(name string) error {
 	);`, name)
 	_, err := DB.DB.Exec(query)
 	if err != nil {
-		log.Println(err)
+		DB.logger.Errorf(err.Error())
 	}
 	return err
 }
@@ -82,7 +82,7 @@ func InsertLines(table string, lines []Line) error {
 	query = query[:len(query)-1] + ";"
 	_, err := DB.DB.Exec(query)
 	if err != nil {
-		log.Println(err)
+		DB.logger.Errorf(err.Error())
 	}
 	return err
 }

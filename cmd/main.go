@@ -8,13 +8,12 @@ import (
 
 func main() {
 	database.ConnectDB()
-	//dataBase := database.Init()
-	//database.ConnectDb()
+	defer database.Close()
+
 	xmlToDB.XMLToDB("kia")
 	xmlToDB.XMLToDB("polo")
 
 	b := bot.Init()
 	b.Start()
 	defer b.Stop()
-	database.Close()
 }
