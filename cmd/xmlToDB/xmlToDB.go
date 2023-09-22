@@ -2,7 +2,6 @@ package xmlToDB
 
 import (
 	"encoding/xml"
-	"log"
 	"technician_bot/database"
 
 	//"main/database"
@@ -26,16 +25,20 @@ type Root struct {
 	MxCell []database.Line `xml:"mxCell"`
 }
 
-func XMLToDB(fileName string) {
+func FileToDB(filePath string, tableName string) error {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+	return ByteToDB(data, tableName)
+}
+
+func ByteToDB(data []byte, tableName string) error {
 	mxFile := new(Mxfile)
 
-	data, err := os.ReadFile("cmd/xmlToDB/xml/" + fileName + ".xml")
+	err := xml.Unmarshal(data, &mxFile)
 	if err != nil {
-		log.Fatal(err)
-	}
-	err = xml.Unmarshal(data, &mxFile)
-	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	mxCell := mxFile.Diagram.MxGraphModel.Root.MxCell
@@ -44,7 +47,8 @@ func XMLToDB(fileName string) {
 		mxCell[i].Value = utils.HtmlToString(mxCell[i].Value)
 	}
 
-	_ = database.DropTable(fileName)
-	_ = database.CreateTable(fileName)
-	_ = database.InsertLines(fileName, mxCell)
+	_ = database.DropTable(tableName)
+	_ = database.CreateTable(tableName)
+	_ = database.InsertLines(tableName, mxCell)
+	return nil
 }

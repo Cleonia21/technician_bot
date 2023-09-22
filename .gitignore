@@ -1,2 +1,3 @@
 cmd/conf/conf.go
 .*
+*.env

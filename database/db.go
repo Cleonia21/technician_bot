@@ -10,7 +10,7 @@ import (
 )
 
 type DBinstance struct {
-	DB     *sql.DB
+	db     *sql.DB
 	logger telego.Logger
 }
 
@@ -19,10 +19,8 @@ var DB DBinstance
 func ConnectDB() {
 	DB.logger, _ = utils.NewLogger("")
 
-	//connStr := "user=postgres password=2222 dbname=postgres port=5432 sslmode=disable"
-	connStr := "postgres://username:testpass@postgres:5432/mydb?sslmode=disable"
 	var err error
-	DB.DB, err = sql.Open("postgres", connStr) //)
+	DB.db, err = sql.Open("postgres", connectString())
 
 	if err != nil {
 		DB.logger.Errorf("Failed to connect to database. \n", err)
@@ -31,8 +29,36 @@ func ConnectDB() {
 	DB.logger.Debugf("data base connected")
 }
 
+func connectString() string {
+	//connStr := "user=postgres password=2222 dbname=postgres port=5432 sslmode=disable"
+	//connStr := "postgres://username:testpass@postgres:5432/mydb?sslmode=disable"
+	//connStr := "postgres://cleonia:ek666x190@localhost:5432/tch_bot?sslmode=disable"
+	var user, pass, host, dbName string
+	var ok bool
+	if user, ok = os.LookupEnv("POSTGRES_USER"); !ok {
+		DB.logger.Errorf("env POSTGRES_USER not found")
+	}
+	if pass, ok = os.LookupEnv("POSTGRES_PASSWORD"); !ok {
+		DB.logger.Errorf("env POSTGRES_PASSWORD not found")
+	}
+	if host, ok = os.LookupEnv("POSTGRES_HOST"); !ok {
+		DB.logger.Errorf("env POSTGRES_HOST not found")
+	}
+	if dbName, ok = os.LookupEnv("POSTGRES_DB"); !ok {
+		DB.logger.Errorf("env POSTGRES_DB not found")
+	}
+	connStr := fmt.Sprintf("postgres://%v:%v@%v:5432/%v?sslmode=disable",
+		user,
+		pass,
+		host,
+		dbName,
+	)
+	fmt.Println(connStr)
+	return connStr
+}
+
 func DropTable(tableName string) error {
-	_, err := DB.DB.Exec(fmt.Sprintf("DROP TABLE %v", tableName))
+	_, err := DB.db.Exec(fmt.Sprintf("DROP TABLE %v", tableName))
 	if err != nil {
 		DB.logger.Errorf(err.Error())
 	}
@@ -49,7 +75,7 @@ func CreateTable(name string) error {
 		source text,
 		target text
 	);`, name)
-	_, err := DB.DB.Exec(query)
+	_, err := DB.db.Exec(query)
 	if err != nil {
 		DB.logger.Errorf(err.Error())
 	}
@@ -57,7 +83,7 @@ func CreateTable(name string) error {
 }
 
 func Close() {
-	_ = DB.DB.Close()
+	_ = DB.db.Close()
 }
 
 type Line struct {
@@ -80,7 +106,7 @@ func InsertLines(table string, lines []Line) error {
 			line.Target)
 	}
 	query = query[:len(query)-1] + ";"
-	_, err := DB.DB.Exec(query)
+	_, err := DB.db.Exec(query)
 	if err != nil {
 		DB.logger.Errorf(err.Error())
 	}
@@ -88,21 +114,21 @@ func InsertLines(table string, lines []Line) error {
 }
 
 func GetKey(table string, value string) (key string, err error) {
-	row := DB.DB.QueryRow(fmt.Sprintf("select key from %v where value = '%v'", table, value))
+	row := DB.db.QueryRow(fmt.Sprintf("select key from %v where value = '%v'", table, value))
 
 	err = row.Scan(&key)
 	return
 }
 
 func GetValue(table string, key string) (value string, err error) {
-	row := DB.DB.QueryRow(fmt.Sprintf("select value from %v where key = '%v'", table, key))
+	row := DB.db.QueryRow(fmt.Sprintf("select value from %v where key = '%v'", table, key))
 
 	err = row.Scan(&value)
 	return
 }
 
 func GetChild(table string, key string) (child map[string]string, err error) {
-	rows, err := DB.DB.Query(fmt.Sprintf("select key, value from %v where parent = '%v'", table, key))
+	rows, err := DB.db.Query(fmt.Sprintf("select key, value from %v where parent = '%v'", table, key))
 	if err != nil {
 		return nil, err
 	}
@@ -120,22 +146,39 @@ func GetChild(table string, key string) (child map[string]string, err error) {
 }
 
 func GetParent(table string, key string) (parent string, err error) {
-	row := DB.DB.QueryRow(fmt.Sprintf("select parent from %v where key = '%v'", table, key))
+	row := DB.db.QueryRow(fmt.Sprintf("select parent from %v where key = '%v'", table, key))
 
 	err = row.Scan(&parent)
 	return
 }
 
 func GetTarget(table string, sourceKey string) (targetKey string, err error) {
-	row := DB.DB.QueryRow(fmt.Sprintf("select target from %v where source = '%v'", table, sourceKey))
+	row := DB.db.QueryRow(fmt.Sprintf("select target from %v where source = '%v'", table, sourceKey))
 
 	err = row.Scan(&targetKey)
 	return
 }
 
 func GetSource(table string, targetKey string) (sourceKey string, err error) {
-	row := DB.DB.QueryRow(fmt.Sprintf("select source from %v where target = '%v'", table, targetKey))
+	row := DB.db.QueryRow(fmt.Sprintf("select source from %v where target = '%v'", table, targetKey))
 
 	err = row.Scan(&sourceKey)
+	return
+}
+
+func GetTables() (tables []string, err error) {
+	rows, err := DB.db.Query("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var tableName string
+		if err = rows.Scan(&tableName); err != nil {
+			return nil, err
+		}
+		tables = append(tables, tableName)
+	}
 	return
 }
