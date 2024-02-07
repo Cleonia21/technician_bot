@@ -1,0 +1,19 @@
+version: '3'
+services:
+  app:
+    image: cleonia/tch_bot
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+  db:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: mydb
+    ports:
+      - "5431:5432"
+    volumes:
+      - ./data:/var/lib/post
