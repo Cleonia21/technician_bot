@@ -60,7 +60,7 @@ func connectString() string {
 func DropTable(tableName string) error {
 	_, err := DB.db.Exec(fmt.Sprintf("DROP TABLE %v", tableName))
 	if err != nil {
-		DB.logger.Errorf(err.Error())
+		DB.logger.Debugf(err.Error())
 	}
 	return err
 }

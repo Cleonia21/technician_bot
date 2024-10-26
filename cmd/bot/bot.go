@@ -13,6 +13,7 @@ import (
 type Bot struct {
 	telegram *telego.Bot
 	logger   *log.Logger
+	roots    map[string]interface{}
 }
 
 func Init() *Bot {
@@ -29,6 +30,9 @@ func Init() *Bot {
 	}
 
 	b.logger, _ = utils.NewLogger("")
+
+	b.roots = make(map[string]interface{})
+	b.roots["Cleonia_21"] = struct{}{}
 
 	return b
 }

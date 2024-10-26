@@ -14,14 +14,15 @@ func (b *Bot) msgHandler(msg *telego.Message) {
 	var keyboard *telego.InlineKeyboardMarkup
 	var text string
 
+	// не красивое быстрое решение
+	if msg.Caption != "" {
+		msg.Text = msg.Caption
+	}
+
 	if msg.Text == "/start" {
 		keyboard, text = b.startMsgParams()
-	} else if msg.Document != nil {
-		err := b.fileHandler(msg.Document)
-		if err != nil {
-			b.logger.Errorf(err.Error())
-		}
-		keyboard, text = b.startMsgParams()
+	} else if len(msg.Text) != 0 && msg.Text[0] == '/' {
+		text = b.rootCommand(msg)
 	} else {
 		return
 	}
@@ -29,17 +30,60 @@ func (b *Bot) msgHandler(msg *telego.Message) {
 	b.sendMenu(telegoutil.ID(msg.Chat.ID), "", keyboard, text)
 }
 
+func (b *Bot) verify(username string) bool {
+	_, ok := b.roots[username]
+	return ok
+}
+
+func (b *Bot) rootCommand(msg *telego.Message) string {
+	tmp := strings.Split(msg.Text, " ")
+
+	command := tmp[0]
+	data := ""
+	if len(tmp) > 1 {
+		data = tmp[1]
+	}
+
+	if command == "/яАдмин" {
+		b.roots[msg.From.Username] = struct{}{}
+		return "успешно"
+	}
+
+	if !b.verify(msg.From.Username) {
+		return "Нет такой команды"
+	}
+
+	if command == "/добавитьМашину" {
+		err := b.fileHandler(msg.Document)
+		if err != nil {
+			b.logger.Errorf(err.Error())
+			return err.Error()
+		}
+	} else if command == "/удалитьМашину" {
+		err := database.DropTable(data)
+		if err != nil {
+			b.logger.Errorf(err.Error())
+			return err.Error()
+		}
+	} else {
+		return "Нет такой команды"
+	}
+	return "успешно"
+}
+
 func (b *Bot) fileHandler(doc *telego.Document) error {
-	splitFileName := strings.Split(doc.FileName, "@")
-	if len(splitFileName) != 2 || splitFileName[0] != "pass" {
+	splitFileName := strings.Split(doc.FileName, ".")
+
+	if len(splitFileName) != 2 {
 		return errors.New("incorrect file name")
 	}
 
-	splitTableName := strings.Split(splitFileName[1], ".")
-	if len(splitTableName) != 2 || splitTableName[1] != "xml" {
+	tableName := splitFileName[0]
+	fileType := splitFileName[1]
+
+	if fileType != "xml" {
 		return errors.New("incorrect file name")
 	}
-	tableName := splitTableName[0]
 
 	file, err := b.telegram.GetFile(&telego.GetFileParams{FileID: doc.FileID})
 	if err != nil {

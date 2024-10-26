@@ -4,8 +4,6 @@ import (
 	"encoding/xml"
 	"technician_bot/database"
 
-	//"main/database"
-	"os"
 	"technician_bot/cmd/utils"
 )
 
@@ -25,14 +23,6 @@ type Root struct {
 	MxCell []database.Line `xml:"mxCell"`
 }
 
-func FileToDB(filePath string, tableName string) error {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-	return ByteToDB(data, tableName)
-}
-
 func ByteToDB(data []byte, tableName string) error {
 	mxFile := new(Mxfile)
 
@@ -47,8 +37,12 @@ func ByteToDB(data []byte, tableName string) error {
 		mxCell[i].Value = utils.HtmlToString(mxCell[i].Value)
 	}
 
-	_ = database.DropTable(tableName)
-	_ = database.CreateTable(tableName)
-	_ = database.InsertLines(tableName, mxCell)
+	err = database.DropTable(tableName)
+	if err = database.CreateTable(tableName); err != nil {
+		return err
+	}
+	if err = database.InsertLines(tableName, mxCell); err != nil {
+		return err
+	}
 	return nil
 }

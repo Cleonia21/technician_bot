@@ -1,1 +1,0 @@
-# technician_bot
