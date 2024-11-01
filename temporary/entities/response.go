@@ -2,6 +2,6 @@ package entities
 
 type Response struct {
 	Id      int
-	Text    string
+	Value   string
 	Options []Option
 }

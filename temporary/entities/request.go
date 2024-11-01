@@ -1,6 +1,7 @@
 package entities
 
 type Request struct {
-	Id   int
-	Data string
+	Id    int
+	Key   string
+	Value string
 }

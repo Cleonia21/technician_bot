@@ -1,6 +1,6 @@
 package entities
 
 type Option struct {
-	Text string
-	Data string
+	Key   string
+	Value string
 }
